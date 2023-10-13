@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -172,9 +173,18 @@ func parse() {
 	// Hardcode 10 simultaneous downloads at most
 	var sem = make(chan int, 10)
 
+	// Maybe just use https://github.com/mvdan/xurls
+	// But we really need just a rigit set of possible urls
+	re := regexp.MustCompile(
+		// it's either cdn.discordapp.com or media.discordapp.net
+		`https://(cdn\.discordapp\.com|media\.discordapp\.net)/` +
+			// attachments/number/number
+			`attachments/\d+/\d+/`+
+			// file.ext
+			`(?P<Filename>.+?\.\w+)`,
+	)
 	err = filepath.Walk(rawDirName, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Println(err)
 			return err
 		}
 
@@ -199,14 +209,30 @@ func parse() {
 		}
 
 		for _, post := range posts {
+			postDirCreated := false
 			postDir := filepath.Join(parsedDir, post.Id)
-			err = os.MkdirAll(postDir, 0755)
-			if err != nil {
-				log.Fatalf("Failed to create %s directory\n", postDir)
+
+			// Post content might also contain some urls pointing to Discord attachments
+			// Scrape those as well
+			urls := re.FindAllStringSubmatch(post.Content, -1)
+			for _, urlMatch := range urls {
+				url := strings.TrimSpace(urlMatch[0])
+				filename := strings.TrimSpace(urlMatch[2])
+				att := Attachment{
+					Url: url,
+					Filename: filename,
+				}
+				post.Attachments = append(post.Attachments, att)
 			}
-			// TODO: post content can also just link discord CDN link
-			// directly, need to parse it and download as well
+
 			for _, attachment := range post.Attachments {
+				if !postDirCreated {
+					err = os.MkdirAll(postDir, 0755)
+					if err != nil {
+						log.Fatalf("Failed to create %s directory\n", postDir)
+					}
+					postDirCreated = true
+				}
 				go downloadAttachment(postDir, post.Id, attachment, &wg, sem)
 			}
 		}
