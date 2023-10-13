@@ -1,6 +1,7 @@
 # Dumpcord
 
-Simple program to dump attachments from discord channel due to Discord's recent addition of expiration date to their CDN urls.
+Simple program to dump attachments from discord channel due to Discord's recent addition of expiration date to their CDN urls. It downloads both files people dropped in as attachments, and by looking for Discord CDN links in the post content.
+
 It's a bit barebons for now, but does the job. Maybe I'll improve it later, or maybe I'll just dump channels I'm interested in
 and abandon it forever.
 
@@ -14,9 +15,6 @@ RIP abusing free VC money :(
 # Run
 Run `dumpcord` without arguments to see the usage
 it creates directory next to the executable where it downloads everything.
-
-# TODO
-Parse discord CDN urls in the post content, for now only attachments are getting downloaded
 
 # LICENSE
 MIT
