@@ -13,8 +13,13 @@ The code is Free And Opensource (tm) so you see that I'm not stealing it.
 RIP abusing free VC money :(
 
 # Run
-Run `dumpcord` without arguments to see the usage
-it creates directory next to the executable where it downloads everything.
+Run `dumpcord` without arguments to see the usage. 
+
+First, run with `-mode=get-raw` to download raw jsons
+
+Then, run with `-mode=parse` to actually download the content
+
+It creates directory next to the executable where it downloads everything.
 
 # LICENSE
 MIT
